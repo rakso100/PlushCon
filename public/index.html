@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PlushCon</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🧸 PlushCon</h1>
+      <nav>
+        <a href="#/countdown" id="nav-countdown">Countdown</a>
+        <a href="#/game" id="nav-game">Game</a>
+        <a href="#/media" id="nav-media">Media</a>
+      </nav>
+    </header>
+
+    <!-- Countdown View -->
+    <section class="card" data-view="countdown">
+      <h2>Countdown</h2>
+      <p class="muted">We’re counting down to the special PlushCon time!</p>
+      <div class="big center" id="countdown">--:--:--</div>
+      <div class="center" style="margin-top:12px">
+        <span class="pill" id="targetLabel"></span>
+      </div>
+    </section>
+
+    <!-- Game View -->
+    <section class="card" data-view="game" style="display:none">
+      <h2>Plushy Pounce</h2>
+      <div class="grid cols-2">
+        <div>
+          <div class="score">Score: <span id="score">0</span></div>
+          <div class="score">Time: <span id="timeLeft">60</span>s | High: <span id="highScore">0</span></div>
+          <div class="muted">Tap or click the plushies before they vanish!</div>
+          <div style="margin-top:10px">
+            <button class="btn" id="startBtn">Start</button>
+            <button class="btn secondary" id="resetBtn">Reset</button>
+          </div>
+          <p class="pill" id="status">Ready...</p>
+        </div>
+        <div>
+          <div class="game-area" id="area">
+            <div class="overlay" id="gameOver">
+              <div class="overlay-box">
+                <h3>Game Over</h3>
+                <div class="bigscore">Score: <span id="finalScore">0</span></div>
+                <div class="muted">High Score: <span id="highScore2">0</span></div>
+                <div class="row">
+                  <button class="btn" id="playAgain">Play Again</button>
+                  <button class="btn secondary" id="closeOverlay">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Media View -->
+    <section class="card" data-view="media" style="display:none">
+      <h2>Media</h2>
+      <div style="height:12px"></div>
+      <h3>We Think You'll Like</h3>
+      <div id="media-top" class="media-grid"></div>
+      <div style="height:16px"></div>
+      <h3>Anything Else</h3>
+      <div id="media-rest" class="media-grid"></div>
+    </section>
+  </div>
+
+  <script>
+    // Simple hash router for 3 views
+    const routes = ['countdown','game','media'];
+    const sections = routes.reduce((acc, r)=>{
+      acc[r] = document.querySelector(`[data-view="${r}"]`);
+      return acc;
+    }, {});
+    function setActive(route){
+      const r = routes.includes(route) ? route : 'countdown';
+      for (const k of routes){ sections[k].style.display = (k===r)?'block':'none'; }
+      document.getElementById('nav-countdown').classList.toggle('muted', r!=='countdown');
+      document.getElementById('nav-game').classList.toggle('muted', r!=='game');
+      document.getElementById('nav-media').classList.toggle('muted', r!=='media');
+      if (r === 'media') refreshMedia();
+    }
+    window.addEventListener('hashchange', ()=> setActive(location.hash.replace('#/','')));
+    setActive(location.hash.replace('#/',''));
+
+    // Countdown (target set in code)
+    const cd = document.getElementById('countdown');
+    const targetLabel = document.getElementById('targetLabel');
+    // Edit this date/time to your event target
+    const TARGET_ISO = '2025-10-11T19:00:00';
+    const TARGET_DATE = new Date(TARGET_ISO);
+    function renderTargetLabel(){ targetLabel.textContent = 'Target: ' + TARGET_DATE.toLocaleString(); }
+    function tick(){ const now=new Date(); let ms=TARGET_DATE-now; if(ms<0) ms=0; const sec=Math.floor(ms/1000)%60; const min=Math.floor(ms/60000)%60; const hr=Math.floor(ms/3600000); const pad=n=>String(n).padStart(2,'0'); cd.textContent=`${pad(hr)}:${pad(min)}:${pad(sec)}`; }
+    (function initCountdown(){ renderTargetLabel(); setInterval(tick,250); })();
+
+    // Game
+    const area = document.getElementById('area');
+    const scoreEl = document.getElementById('score');
+    const timeLeftEl = document.getElementById('timeLeft');
+    const highScoreEl = document.getElementById('highScore');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    let running=false, score=0, spawnTimer=null, timerInterval=null, endAt=0; 
+    const plushies=['🧸','🐻','🐼','🐨','🐰','🐹','🫎'];
+    const BOMB = '💣';
+    const HS_KEY = 'plushcon_highscore';
+    function getHigh(){ return parseInt(localStorage.getItem(HS_KEY)||'0',10) || 0; }
+    function setHigh(v){ localStorage.setItem(HS_KEY, String(v)); }
+    function updateHigh(){ highScoreEl.textContent = getHigh(); }
+    function rnd(min,max){ return Math.random()*(max-min)+min; }
+    function gameOver(msg){
+      running=false;
+      clearTimeout(spawnTimer);
+      clearInterval(timerInterval);
+      const hs = getHigh();
+      if (score > hs){ setHigh(score); }
+      updateHigh();
+      statusEl.textContent = msg + ' Final Score: ' + score;
+      // Show overlay
+      document.getElementById('finalScore').textContent = String(score);
+      document.getElementById('highScore2').textContent = String(getHigh());
+      document.getElementById('gameOver').classList.add('show');
+    }
+    function spawnConfetti(x, y){
+      const colors = ['#ff5fa3','#66d1ff','#ffd166','#70d28b','#b388eb'];
+      for (let i=0;i<18;i++){
+        const p = document.createElement('span');
+        p.className = 'confetti';
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.background = colors[Math.floor(Math.random()*colors.length)];
+        p.style.setProperty('--dx', (Math.random()*120-60).toFixed(1)+'px');
+        p.style.setProperty('--dy', (Math.random()*-140-60).toFixed(1)+'px');
+        p.style.setProperty('--rz', (Math.random()*360-180).toFixed(1)+'deg');
+        area.appendChild(p);
+        setTimeout(()=>p.remove(), 900);
+      }
+    }
+    function spawnExplosion(x, y){
+      for (let i=0;i<24;i++){
+        const e = document.createElement('span');
+        e.className = 'boom';
+        e.style.left = x + 'px';
+        e.style.top = y + 'px';
+        e.style.setProperty('--dx', (Math.random()*220-110).toFixed(1)+'px');
+        e.style.setProperty('--dy', (Math.random()*220-110).toFixed(1)+'px');
+        area.appendChild(e);
+        setTimeout(()=>e.remove(), 500);
+      }
+    }
+    function spawn(){
+      if (!running) return;
+      const isBomb = Math.random() < 0.18; // 18% chance
+      const div=document.createElement('div');
+      div.className='plush' + (isBomb ? ' bomb' : '');
+      div.textContent = isBomb ? BOMB : plushies[Math.floor(Math.random()*plushies.length)];
+      const size=rnd(42,74); div.style.fontSize=size+'px';
+      const w=area.clientWidth-size; const h=area.clientHeight-size;
+      div.style.left=Math.max(0,rnd(0,w))+'px'; div.style.top=Math.max(0,rnd(0,h))+'px';
+      const lifetime=rnd(700,1500);
+      const appear=Date.now();
+      const remove=()=>{ if(div.parentNode) area.removeChild(div); };
+      const clicky=(ev)=>{
+        if (!div.isConnected) return;
+        if (isBomb){
+          const rect = div.getBoundingClientRect();
+          const parentRect = area.getBoundingClientRect();
+          const cx = rect.left - parentRect.left + rect.width/2;
+          const cy = rect.top - parentRect.top + rect.height/2;
+          spawnExplosion(cx, cy);
+          area.classList.add('shake'); setTimeout(()=> area.classList.remove('shake'), 450);
+          remove(); gameOver('Boom! Game over.'); return;
+        }
+        const dt=Date.now()-appear; const bonus=Math.max(1,Math.floor((1500-dt)/200));
+        score += 1+bonus; scoreEl.textContent=score;
+        // confetti from center of plush
+        const rect = div.getBoundingClientRect();
+        const parentRect = area.getBoundingClientRect();
+        const cx = rect.left - parentRect.left + rect.width/2;
+        const cy = rect.top - parentRect.top + rect.height/2;
+        spawnConfetti(cx, cy);
+        remove();
+      };
+      div.addEventListener('click', clicky, { passive: true });
+      div.addEventListener('touchstart', clicky, { passive: true });
+      div.classList.add('spawn');
+      area.appendChild(div);
+      setTimeout(remove, lifetime);
+      const delay=Math.max(200, 820 - score*7);
+      spawnTimer=setTimeout(spawn, delay);
+    }
+    function clearPlayfield(){
+      // Remove dynamically added elements but keep the overlay node
+      const overlay = document.getElementById('gameOver');
+      Array.from(area.children).forEach((c)=>{ if (c !== overlay) c.remove(); });
+    }
+    function startGame(){
+      if (running) return;
+      running = true; score = 0; scoreEl.textContent = '0'; timeLeftEl.textContent = '60'; statusEl.textContent = 'Go! Avoid bombs!';
+      const go = document.getElementById('gameOver'); if (go) go.classList.remove('show');
+      clearPlayfield();
+      endAt = Date.now() + 60000; // 60 seconds
+      // Timer
+      clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{
+        const left = Math.max(0, Math.ceil((endAt - Date.now())/1000));
+        timeLeftEl.textContent = left;
+        if (left <= 0) { gameOver('Time up!'); }
+      }, 200);
+      spawn();
+    }
+    updateHigh();
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', ()=>{
+      running=false; clearTimeout(spawnTimer); clearInterval(timerInterval);
+      score=0; scoreEl.textContent='0'; timeLeftEl.textContent='60'; statusEl.textContent='Ready...';
+      clearPlayfield();
+    });
+    document.getElementById('playAgain').addEventListener('click', ()=>{ clearPlayfield(); startGame(); });
+    document.getElementById('closeOverlay').addEventListener('click', ()=>{ const go = document.getElementById('gameOver'); if (go) go.classList.remove('show'); });
+
+    
+
+    // Media (code-defined list only)
+    const mediaTop = document.getElementById('media-top');
+    const mediaRest = document.getElementById('media-rest');
+    function extOf(path){ return (path.split('.').pop()||'').toLowerCase(); }
+    function baseName(path){ const parts = path.split('/'); const file = parts[parts.length-1]||''; const dot = file.lastIndexOf('.'); return dot>0 ? file.slice(0,dot) : file; }
+    function isVideoPath(name){ return ['mp4','webm','mov'].includes(extOf(name)); }
+    async function loadManifest(){
+      try{
+        const res = await fetch('media/manifest.json', { cache: 'no-cache' });
+        if(!res.ok) throw new Error('missing');
+        return await res.json();
+      }catch{
+        // Fallback if no manifest present
+        return [ { kind:'text', src:'media/example.txt' } ];
+      }
+    }
+    async function refreshMedia(){
+      if(!mediaTop || !mediaRest) return;
+      mediaTop.innerHTML = '<div class="muted">Loading...</div>';
+      mediaRest.innerHTML = '';
+      const items = await loadManifest();
+      if(!items || !items.length){ mediaTop.innerHTML='<div class="muted">No items yet</div>'; return; }
+      mediaTop.innerHTML='';
+      mediaRest.innerHTML='';
+      const top = items.slice(0,3);
+      const rest = items.slice(3);
+
+      function renderItem(raw){
+        const item = { ...raw };
+        if (!item.name){ item.name = baseName(item.src); }
+        const wrap = document.createElement('div'); wrap.className='media-item';
+        const title = document.createElement('div'); title.textContent = item.name; title.className='muted'; wrap.appendChild(title);
+        if (item.kind === 'video' || isVideoPath(item.src)){
+          const v = document.createElement('video'); v.controls = true; v.src = item.src; wrap.appendChild(v);
+        } else if (item.kind === 'text' || extOf(item.src) === 'txt'){
+          const pre = document.createElement('pre');
+          const candidates = [ item.src, './'+item.src.replace(/^\/?/, ''), '/'+item.src.replace(/^\/?/, '') ];
+          (async ()=>{
+            let ok = false;
+            for (const p of candidates){
+              try{ const res = await fetch(p, { cache:'no-cache' }); if (res.ok){ pre.textContent = await res.text(); ok = true; break; } }
+              catch(e){}
+            }
+            if (!ok) pre.textContent = '(failed to load: '+ item.src +')';
+          })();
+          wrap.appendChild(pre);
+        } else {
+          const a = document.createElement('a'); a.href=item.src; a.textContent='Open'; wrap.appendChild(a);
+        }
+        return wrap;
+      }
+
+      top.forEach(it => mediaTop.appendChild(renderItem(it)));
+      rest.forEach(it => mediaRest.appendChild(renderItem(it)));
+    }
+  </script>
+</body>
+</html>
