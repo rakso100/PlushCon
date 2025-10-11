@@ -93,7 +93,7 @@
     const cd = document.getElementById('countdown');
     const targetLabel = document.getElementById('targetLabel');
     // Edit this date/time to your event target
-    const TARGET_ISO = '2025-10-11T19:00:00';
+    const TARGET_ISO = '2025-10-12T18:00:00';
     const TARGET_DATE = new Date(TARGET_ISO);
     function renderTargetLabel(){ targetLabel.textContent = 'Target: ' + TARGET_DATE.toLocaleString(); }
     function tick(){ const now=new Date(); let ms=TARGET_DATE-now; if(ms<0) ms=0; const sec=Math.floor(ms/1000)%60; const min=Math.floor(ms/60000)%60; const hr=Math.floor(ms/3600000); const pad=n=>String(n).padStart(2,'0'); cd.textContent=`${pad(hr)}:${pad(min)}:${pad(sec)}`; }
