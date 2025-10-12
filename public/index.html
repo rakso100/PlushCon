@@ -3,12 +3,556 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PlushApp — SecretCon</title>
+  <title>PlushCon</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="secret">
-  <div class="secret-wrap">
-    <h1>We’re excited for the future of PlushApp — SecretCon</h1>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🧸 PlushCon</h1>
+      <nav>
+        <a href="#/countdown" id="nav-countdown">Countdown</a>
+        <a href="#/game" id="nav-game">Game</a>
+        <a href="#/media" id="nav-media">Media</a>
+        <a href="#/plushwash" id="nav-plushwash">PlushWash</a>
+      </nav>
+    </header>
+
+    <!-- Countdown View -->
+    <section class="card" data-view="countdown">
+      <h2>Countdown</h2>
+      <p class="muted">We’re counting down to the special PlushCon time!</p>
+      <div class="big center" id="countdown">--:--:--</div>
+      <div class="center" style="margin-top:12px">
+        <span class="pill" id="targetLabel"></span>
+      </div>
+    </section>
+
+    <!-- Game 2 View -->
+    <section class="card" data-view="game2" style="display:none">
+      <h2>Rainbow Rush</h2>
+      <div class="grid cols-2">
+        <div>
+          <div class="score">Score: <span id="score2">0</span></div>
+          <div class="score">Time: <span id="timeLeft2">45</span>s | High: <span id="highScore2b">0</span></div>
+          <div class="muted">Pop as many plushies as you can in 45 seconds! No bombs — just speed and fun.</div>
+          <div style="margin-top:10px">
+            <button class="btn" id="startBtn2">Start</button>
+            <button class="btn secondary" id="resetBtn2">Reset</button>
+          </div>
+          <p class="pill" id="status2">Ready...</p>
+        </div>
+        <div>
+          <div class="game-area" id="area2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Game View -->
+    <section class="card" data-view="game" style="display:none">
+      <h2>Games</h2>
+      <div class="grid cols-2">
+        <div>
+          <label class="pill">Choose Game
+            <select id="gameSelect" style="margin-left:8px">
+              <option value="g1">Plushy Pounce</option>
+              <option value="g2">Rainbow Rush</option>
+              <option value="g3">Dodge Dash</option>
+            </select>
+          </label>
+
+          <!-- Controls for Game 1 -->
+          <div id="g1-controls">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="score">Time: <span id="timeLeft">60</span>s | High: <span id="highScore">0</span></div>
+            <div class="muted">Tap or click the plushies before they vanish! Avoid bombs.</div>
+            <div style="margin-top:10px">
+              <button class="btn" id="startBtn">Start</button>
+              <button class="btn secondary" id="resetBtn">Reset</button>
+            </div>
+            <p class="pill" id="status">Ready...</p>
+          </div>
+
+          <!-- Controls for Game 2 -->
+          <div id="g2-controls" style="display:none">
+            <div class="score">Score: <span id="score2">0</span></div>
+            <div class="score">Time: <span id="timeLeft2">45</span>s | High: <span id="highScore2b">0</span></div>
+            <div class="muted">Pop as many as you can in 45s — no bombs!</div>
+            <div style="margin-top:10px">
+              <button class="btn" id="startBtn2">Start</button>
+              <button class="btn secondary" id="resetBtn2">Reset</button>
+            </div>
+            <p class="pill" id="status2">Ready...</p>
+          </div>
+
+          <!-- Controls for Game 3 -->
+          <div id="g3-controls" style="display:none">
+            <div class="score">Score: <span id="score3">0</span></div>
+            <div class="score">Time: <span id="timeLeft3">30</span>s | High: <span id="highScore3">0</span></div>
+            <div class="muted">Move the bear to dodge falling bombs! Use buttons.</div>
+            <div class="row" style="margin-top:10px">
+              <button class="btn" id="startBtn3">Start</button>
+              <button class="btn secondary" id="resetBtn3">Reset</button>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn secondary" id="leftBtn">◀</button>
+              <button class="btn secondary" id="rightBtn">▶</button>
+            </div>
+            <p class="pill" id="status3">Ready...</p>
+          </div>
+        </div>
+        <div>
+          <!-- Areas -->
+          <div class="game-area" id="area" data-area="g1">
+            <div class="overlay" id="gameOver">
+              <div class="overlay-box">
+                <h3>Game Over</h3>
+                <div class="bigscore">Score: <span id="finalScore">0</span></div>
+                <div class="muted">High Score: <span id="highScore2">0</span></div>
+                <div class="row">
+                  <button class="btn" id="playAgain">Play Again</button>
+                  <button class="btn secondary" id="closeOverlay">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="game-area" id="area2" data-area="g2" style="display:none"></div>
+          <div class="game-area" id="area3" data-area="g3" style="display:none; position:relative"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Media View -->
+    <section class="card" data-view="media" style="display:none">
+      <h2>Media</h2>
+      <p class="muted">Media is added in code only. Put files in <code>public/media/</code> and update <code>media/manifest.json</code>.</p>
+      <div style="height:12px"></div>
+      <h3>We Think You'll Like</h3>
+      <div id="media-top" class="media-grid"></div>
+      <div style="height:16px"></div>
+      <h3>Anything Else</h3>
+      <div id="media-rest" class="media-grid"></div>
+    </section>
+
+    <!-- PlushWash View -->
+    <section class="card" data-view="plushwash" style="display:none">
+      <h2>PlushWash</h2>
+      <p class="muted">Tell us which plushie needs a bubble bath 🫧</p>
+      <form action="https://formsubmit.co/oskar@frizzled.com" method="POST" class="grid" style="max-width:520px">
+        <label>
+          Plushie Name
+          <input type="text" name="plushie_name" placeholder="e.g., Mr. Snuggles" required>
+        </label>
+
+        <!-- Optional config -->
+        <input type="hidden" name="_subject" value="PlushWash Request">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+
+        <button class="btn" type="submit">Send PlushWash Request</button>
+      </form>
+    </section>
   </div>
+
+  <script>
+    // Inline fallback manifest (edit this if fetch fails)
+    const embeddedManifestEl = document.createElement('script');
+    embeddedManifestEl.id = 'media-manifest';
+    embeddedManifestEl.type = 'application/json';
+    embeddedManifestEl.textContent = JSON.stringify([
+      { kind: 'video', src: 'media/PlushFund.mp4' },
+      { kind: 'video', src: 'media/PlushCon Teaser 11th.mp4' },
+      { kind: 'text',  src: 'media/Welcome.txt' }
+    ]);
+    document.currentScript.before(embeddedManifestEl);
+
+    // Simple hash router for 4 views
+    const routes = ['countdown','game','media','plushwash'];
+    const sections = routes.reduce((acc, r)=>{ acc[r] = document.querySelector(`[data-view="${r}"]`); return acc; }, {});
+    function setActive(route){
+      const r = routes.includes(route) ? route : 'countdown';
+      for (const k of routes){ sections[k].style.display = (k===r)?'block':'none'; }
+      document.getElementById('nav-countdown').classList.toggle('muted', r!=='countdown');
+      document.getElementById('nav-game').classList.toggle('muted', r!=='game');
+      document.getElementById('nav-media').classList.toggle('muted', r!=='media');
+      document.getElementById('nav-plushwash').classList.toggle('muted', r!=='plushwash');
+      if (r === 'media') refreshMedia();
+    }
+    window.addEventListener('hashchange', ()=> setActive(location.hash.replace('#/','')));
+    setActive(location.hash.replace('#/',''));
+
+    // Countdown (target set in code)
+    const cd = document.getElementById('countdown');
+    const targetLabel = document.getElementById('targetLabel');
+    const TARGET_ISO = '2025-12-20T10:00:00';
+    const TARGET_DATE = new Date(TARGET_ISO);
+    function renderTargetLabel(){ targetLabel.textContent = 'Target: ' + TARGET_DATE.toLocaleString(); }
+    function tick(){ const now=new Date(); let ms=TARGET_DATE-now; if(ms<0) ms=0; const sec=Math.floor(ms/1000)%60; const min=Math.floor(ms/60000)%60; const hr=Math.floor(ms/3600000); const pad=n=>String(n).padStart(2,'0'); cd.textContent=`${pad(hr)}:${pad(min)}:${pad(sec)}`; }
+    (function initCountdown(){ renderTargetLabel(); setInterval(tick,250); })();
+
+    // Game
+    const area = document.getElementById('area');
+    const scoreEl = document.getElementById('score');
+    const timeLeftEl = document.getElementById('timeLeft');
+    const highScoreEl = document.getElementById('highScore');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    let running=false, score=0, spawnTimer=null, timerInterval=null, endAt=0; 
+    const plushies=['🧸','🐻','🐼','🐨','🐰','🐹'];
+    const BOMB = '💣';
+    const HS_KEY = 'plushcon_highscore';
+    function getHigh(){ return parseInt(localStorage.getItem(HS_KEY)||'0',10) || 0; }
+    function setHigh(v){ localStorage.setItem(HS_KEY, String(v)); }
+    function updateHigh(){ highScoreEl.textContent = getHigh(); }
+    function rnd(min,max){ return Math.random()*(max-min)+min; }
+    function gameOver(msg){
+      running=false; clearTimeout(spawnTimer); clearInterval(timerInterval);
+      const hs = getHigh(); if (score > hs){ setHigh(score); } updateHigh();
+      statusEl.textContent = msg + ' Final Score: ' + score;
+      document.getElementById('finalScore').textContent = String(score);
+      document.getElementById('highScore2').textContent = String(getHigh());
+      document.getElementById('gameOver').classList.add('show');
+    }
+    function spawnConfetti(x, y){
+      const colors = ['#ff5fa3','#66d1ff','#ffd166','#70d28b','#b388eb'];
+      for (let i=0;i<18;i++){
+        const p = document.createElement('span'); p.className = 'confetti';
+        p.style.left = x + 'px'; p.style.top = y + 'px';
+        p.style.background = colors[Math.floor(Math.random()*colors.length)];
+        p.style.setProperty('--dx', (Math.random()*120-60).toFixed(1)+'px');
+        p.style.setProperty('--dy', (Math.random()*-140-60).toFixed(1)+'px');
+        p.style.setProperty('--rz', (Math.random()*360-180).toFixed(1)+'deg');
+        area.appendChild(p); setTimeout(()=>p.remove(), 900);
+      }
+    }
+    function spawnExplosion(x, y){
+      for (let i=0;i<24;i++){
+        const e = document.createElement('span'); e.className = 'boom';
+        e.style.left = x + 'px'; e.style.top = y + 'px';
+        e.style.setProperty('--dx', (Math.random()*220-110).toFixed(1)+'px');
+        e.style.setProperty('--dy', (Math.random()*220-110).toFixed(1)+'px');
+        area.appendChild(e); setTimeout(()=>e.remove(), 500);
+      }
+    }
+    function clearPlayfield(){
+      const overlay = document.getElementById('gameOver');
+      Array.from(area.children).forEach((c)=>{ if (c !== overlay) c.remove(); });
+    }
+    function spawn(){
+      if (!running) return;
+      const isBomb = Math.random() < 0.18;
+      const div=document.createElement('div');
+      div.className='plush' + (isBomb ? ' bomb' : '');
+      div.textContent = isBomb ? BOMB : plushies[Math.floor(Math.random()*plushies.length)];
+      const size=rnd(42,74); div.style.fontSize=size+'px';
+      const w=area.clientWidth-size; const h=area.clientHeight-size;
+      div.style.left=Math.max(0,rnd(0,w))+'px'; div.style.top=Math.max(0,rnd(0,h))+'px';
+      const lifetime=rnd(700,1500); const appear=Date.now();
+      const remove=()=>{ if(div.parentNode) area.removeChild(div); };
+      const clicky=(ev)=>{
+        if (!div.isConnected) return;
+        const rect = div.getBoundingClientRect(); const parentRect = area.getBoundingClientRect();
+        const cx = rect.left - parentRect.left + rect.width/2; const cy = rect.top - parentRect.top + rect.height/2;
+        if (isBomb){ spawnExplosion(cx, cy); area.classList.add('shake'); setTimeout(()=> area.classList.remove('shake'), 450); remove(); gameOver('Boom! Game over.'); return; }
+        const dt=Date.now()-appear; const bonus=Math.max(1,Math.floor((1500-dt)/200));
+        score += 1+bonus; scoreEl.textContent=score; spawnConfetti(cx, cy); remove();
+      };
+      div.addEventListener('click', clicky, { passive: true });
+      div.addEventListener('touchstart', clicky, { passive: true });
+      div.classList.add('spawn'); area.appendChild(div);
+      setTimeout(remove, lifetime);
+      const delay=Math.max(200, 820 - score*7); spawnTimer=setTimeout(spawn, delay);
+    }
+    function startGame(){
+      if (running) return; running = true; score = 0; scoreEl.textContent = '0'; timeLeftEl.textContent = '60'; statusEl.textContent = 'Go! Avoid bombs!';
+      const go = document.getElementById('gameOver'); if (go) go.classList.remove('show'); clearPlayfield();
+      endAt = Date.now() + 60000; clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{ const left = Math.max(0, Math.ceil((endAt - Date.now())/1000)); timeLeftEl.textContent = left; if (left <= 0) { gameOver('Time up!'); } }, 200);
+      spawn();
+    }
+    updateHigh();
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', ()=>{ running=false; clearTimeout(spawnTimer); clearInterval(timerInterval); score=0; scoreEl.textContent='0'; timeLeftEl.textContent='60'; statusEl.textContent='Ready...'; clearPlayfield(); });
+    document.getElementById('playAgain').addEventListener('click', ()=>{ clearPlayfield(); startGame(); });
+    document.getElementById('closeOverlay').addEventListener('click', ()=>{ const go = document.getElementById('gameOver'); if (go) go.classList.remove('show'); });
+
+    // Media
+    const mediaTop = document.getElementById('media-top');
+    const mediaRest = document.getElementById('media-rest');
+    function extOf(path){ return (path.split('.').pop()||'').toLowerCase(); }
+    function baseName(path){ const parts = path.split('/'); let file = parts[parts.length-1]||''; try { file = decodeURIComponent(file); } catch(e){} const dot = file.lastIndexOf('.'); return dot>0 ? file.slice(0,dot) : file; }
+    function isVideoPath(name){ return ['mp4','webm','mov'].includes(extOf(name)); }
+    async function loadManifest(){
+      const candidates = ['media/manifest.json','./media/manifest.json','/media/manifest.json','/public/media/manifest.json'];
+      for (const p of candidates){ try{ const res = await fetch(p, { cache: 'no-cache' }); if (res.ok){ return await res.json(); } } catch(e){} }
+      try{ const el = document.getElementById('media-manifest'); if (el && el.textContent){ const json = JSON.parse(el.textContent); if (Array.isArray(json) && json.length) return json; } }catch(e){}
+      return [];
+    }
+    
+    // Rainbow Rush (Game 2)
+    (function(){
+      const area2 = document.getElementById('area2');
+      const scoreEl2 = document.getElementById('score2');
+      const timeLeftEl2 = document.getElementById('timeLeft2');
+      const highScoreEl2b = document.getElementById('highScore2b');
+      const startBtn2 = document.getElementById('startBtn2');
+      const resetBtn2 = document.getElementById('resetBtn2');
+      const statusEl2 = document.getElementById('status2');
+      if (!area2) return;
+      let running2=false, score2=0, spawnTimer2=null, timerInterval2=null, endAt2=0;
+      const HS2_KEY = 'plushcon_rr_highscore';
+      const getHigh2=()=> parseInt(localStorage.getItem(HS2_KEY)||'0',10) || 0;
+      const setHigh2=(v)=> localStorage.setItem(HS2_KEY, String(v));
+      const updateHigh2=()=>{ if (highScoreEl2b) highScoreEl2b.textContent = getHigh2(); };
+      const rnd2=(min,max)=> Math.random()*(max-min)+min;
+      function spawnConfetti2(x, y){
+        const colors = ['#ff5fa3','#66d1ff','#ffd166','#70d28b','#b388eb'];
+        for (let i=0;i<14;i++){
+          const p = document.createElement('span'); p.className='confetti';
+          p.style.left=x+'px'; p.style.top=y+'px'; p.style.background=colors[Math.floor(Math.random()*colors.length)];
+          p.style.setProperty('--dx', (Math.random()*140-70).toFixed(1)+'px');
+          p.style.setProperty('--dy', (Math.random()*-160-60).toFixed(1)+'px');
+          p.style.setProperty('--rz', (Math.random()*360-180).toFixed(1)+'deg');
+          area2.appendChild(p); setTimeout(()=>p.remove(), 900);
+        }
+      }
+      function gameOver2(){
+        running2=false; clearTimeout(spawnTimer2); clearInterval(timerInterval2);
+        const hs = getHigh2(); if (score2>hs) setHigh2(score2); updateHigh2();
+        statusEl2.textContent = 'Time up! Final: ' + score2;
+      }
+      function spawn2(){
+        if (!running2) return;
+        const div=document.createElement('div'); div.className='plush';
+        div.textContent = plushies[Math.floor(Math.random()*plushies.length)];
+        const size=rnd2(38,68); div.style.fontSize=size+'px';
+        const w=area2.clientWidth-size; const h=area2.clientHeight-size;
+        div.style.left=Math.max(0,rnd2(0,w))+'px'; div.style.top=Math.max(0,rnd2(0,h))+'px';
+        const lifetime=rnd2(600,1200); const appear=Date.now();
+        const remove=()=>{ if(div.parentNode) area2.removeChild(div); };
+        const clicky=()=>{
+          if(!div.isConnected) return;
+          const rect = div.getBoundingClientRect(); const parentRect = area2.getBoundingClientRect();
+          const cx = rect.left - parentRect.left + rect.width/2; const cy = rect.top - parentRect.top + rect.height/2;
+          const dt=Date.now()-appear; const bonus=Math.max(1,Math.floor((1200-dt)/200));
+          score2 += 1+bonus; scoreEl2.textContent=score2; spawnConfetti2(cx, cy); remove();
+        };
+        div.addEventListener('click', clicky, { passive:true });
+        div.addEventListener('touchstart', clicky, { passive:true });
+        area2.appendChild(div); setTimeout(remove, lifetime);
+        const delay=Math.max(160, 760 - score2*6); spawnTimer2=setTimeout(spawn2, delay);
+      }
+      function startGame2(){
+        if (running2) return; running2=true; score2=0; scoreEl2.textContent='0'; statusEl2.textContent='Go!';
+        endAt2 = Date.now() + 45000; clearInterval(timerInterval2);
+        timerInterval2 = setInterval(()=>{ const left=Math.max(0,Math.ceil((endAt2-Date.now())/1000)); timeLeftEl2.textContent=left; if(left<=0){ gameOver2(); } }, 200);
+        spawn2();
+      }
+      updateHigh2();
+      startBtn2.addEventListener('click', startGame2);
+      resetBtn2.addEventListener('click', ()=>{ running2=false; clearTimeout(spawnTimer2); clearInterval(timerInterval2); score2=0; scoreEl2.textContent='0'; timeLeftEl2.textContent='45'; statusEl2.textContent='Ready...'; Array.from(area2.children).forEach(c=>c.remove()); });
+    })();
+
+    // Dodge Dash (Game 3)
+    ;(function(){
+      const area3 = document.getElementById('area3'); if (!area3) return;
+      const scoreEl3 = document.getElementById('score3');
+      const timeLeftEl3 = document.getElementById('timeLeft3');
+      const highScoreEl3 = document.getElementById('highScore3');
+      const startBtn3 = document.getElementById('startBtn3');
+      const resetBtn3 = document.getElementById('resetBtn3');
+      const leftBtn = document.getElementById('leftBtn');
+      const rightBtn = document.getElementById('rightBtn');
+      const statusEl3 = document.getElementById('status3');
+      const HS3_KEY='plushcon_dd_highscore';
+      let running=false, score=0, endAt=0, player, vx=0, timer=null, spawner=null;
+      const getH=()=> parseInt(localStorage.getItem(HS3_KEY)||'0',10)||0;
+      const setH=(v)=> localStorage.setItem(HS3_KEY, String(v));
+      const updateH=()=> highScoreEl3.textContent=getH();
+      function spawnPuff(x,y){
+        for(let i=0;i<10;i++){
+          const p=document.createElement('span'); p.className='puff';
+          p.style.left=x+'px'; p.style.top=y+'px';
+          area3.appendChild(p); setTimeout(()=>p.remove(), 450);
+        }
+      }
+      function spawnSparkle(x,y){
+        const s=document.createElement('span'); s.className='sparkle'; s.style.left=x+'px'; s.style.top=y+'px';
+        area3.appendChild(s); setTimeout(()=>s.remove(), 350);
+      }
+      function spawnBomb(){
+        if(!running) return;
+        const b=document.createElement('div'); b.className='plush bomb'; b.textContent='💣'; b.style.fontSize='36px';
+        const w=area3.clientWidth-36; b.style.left=Math.max(0,Math.random()*w)+'px'; b.style.top='-40px';
+        area3.appendChild(b);
+        const fall=()=>{
+          if(!b.isConnected) return;
+          const y=parseFloat(b.style.top)||0; b.style.top=(y+6)+'px';
+          // collision
+          const br=b.getBoundingClientRect(); const pr=player.getBoundingClientRect();
+          if(!(br.right<pr.left||br.left>pr.right||br.bottom<pr.top||br.top>pr.bottom)){
+            // explosion at collision point + shake
+            const ar = area3.getBoundingClientRect();
+            const cx = br.left - ar.left + br.width/2; const cy = br.top - ar.top + br.height/2;
+            if (typeof spawnExplosion === 'function') spawnExplosion(cx, cy);
+            area3.classList.add('shake'); setTimeout(()=> area3.classList.remove('shake'), 450);
+            b.remove(); gameOver(); return;
+          }
+          if(y<area3.clientHeight-8 && running){
+            requestAnimationFrame(fall);
+          } else {
+            // ground puff
+            const ar = area3.getBoundingClientRect();
+            const cx = br.left - ar.left + br.width/2; const cy = area3.clientHeight-6;
+            spawnPuff(cx, cy);
+            b.remove();
+          }
+        };
+        requestAnimationFrame(fall);
+        spawner=setTimeout(spawnBomb, Math.max(300, 900 - score*10));
+      }
+      function tick(){
+        if(!running) return;
+        const left=Math.max(0, Math.ceil((endAt-Date.now())/1000));
+        timeLeftEl3.textContent=left; scoreEl3.textContent=score;
+        if(left<=0){ gameOver(); return; }
+        score += 1; // 1 point per tick (~200ms)
+      }
+      let sparkleTick=0;
+      function movePlayer(){
+        if(!running) return;
+        const x=(parseFloat(player.style.left)||0)+vx; const max=area3.clientWidth-40;
+        player.style.left=Math.min(Math.max(0,x), max)+'px';
+        if ((sparkleTick++ % 6)===0){
+          const pr=player.getBoundingClientRect(); const ar=area3.getBoundingClientRect();
+          const sx = pr.left - ar.left + pr.width/2; const sy = pr.top - ar.top + pr.height - 6;
+          spawnSparkle(sx, sy);
+        }
+        requestAnimationFrame(movePlayer);
+      }
+      function gameOver(){
+        running=false; clearInterval(timer); clearTimeout(spawner);
+        statusEl3.textContent='Ouch! Final: '+score;
+        const h=getH(); if(score>h) setH(score); updateH();
+      }
+      function start(){
+        if(running) return; running=true; score=0; statusEl3.textContent='Dodge!';
+        area3.innerHTML='';
+        player=document.createElement('div'); player.className='plush'; player.textContent='🧸'; player.style.fontSize='40px'; player.style.bottom='8px'; player.style.position='absolute'; player.style.left=(area3.clientWidth/2-20)+'px'; player.style.top='auto';
+        area3.appendChild(player);
+        vx=0; endAt=Date.now()+30000; updateH();
+        clearInterval(timer); timer=setInterval(tick,200); spawnBomb(); movePlayer();
+      }
+      function reset(){ running=false; clearInterval(timer); clearTimeout(spawner); area3.innerHTML=''; score=0; timeLeftEl3.textContent='30'; statusEl3.textContent='Ready...'; }
+      startBtn3.addEventListener('click', start);
+      resetBtn3.addEventListener('click', reset);
+      leftBtn.addEventListener('touchstart', ()=>{ vx=-6; }); rightBtn.addEventListener('touchstart', ()=>{ vx=6; });
+      leftBtn.addEventListener('touchend', ()=>{ vx=0; }); rightBtn.addEventListener('touchend', ()=>{ vx=0; });
+      leftBtn.addEventListener('mousedown', ()=>{ vx=-6; }); rightBtn.addEventListener('mousedown', ()=>{ vx=6; });
+      window.addEventListener('mouseup', ()=>{ vx=0; });
+    })();
+
+    // Game dropdown toggle
+    (function(){
+      const select=document.getElementById('gameSelect'); if(!select) return;
+      const areas={ g1:document.getElementById('area'), g2:document.getElementById('area2'), g3:document.getElementById('area3') };
+      const ctrls={ g1:document.getElementById('g1-controls'), g2:document.getElementById('g2-controls'), g3:document.getElementById('g3-controls') };
+      function apply(){ const v=select.value; for(const k of Object.keys(areas)){ areas[k].style.display = (k===v)?'block':'none'; ctrls[k].style.display=(k===v)?'block':'none'; } }
+      select.addEventListener('change', apply); apply();
+    })();
+    async function refreshMedia(){
+      if(!mediaTop || !mediaRest) return;
+      mediaTop.innerHTML = '<div class="muted">Loading...</div>'; mediaRest.innerHTML = '';
+      const items = await loadManifest();
+      if(!items || !items.length){ mediaTop.innerHTML='<div class="muted">No media found. Ensure media/manifest.json is reachable.</div>'; return; }
+      mediaTop.innerHTML=''; mediaRest.innerHTML='';
+      const top = items.slice(0,3); const rest = items.slice(3);
+      function renderItem(raw){
+        const item = { ...raw }; if (!item.name){ item.name = baseName(item.src); }
+        const wrap = document.createElement('div'); wrap.className='media-item';
+        const title = document.createElement('div'); title.textContent = item.name; title.className='muted'; wrap.appendChild(title);
+        if (item.kind === 'video' || isVideoPath(item.src)){
+          const v = document.createElement('video'); v.controls = true; 
+          const raw = item.src; const enc = encodeURI(raw);
+          const cands = [ raw, enc, './'+raw.replace(/^\/?/, ''), './'+enc.replace(/^\/?/, ''), '/'+raw.replace(/^\/?/, ''), '/'+enc.replace(/^\/?/, '') ];
+          Array.from(new Set(cands)).forEach(s=>{ const src = document.createElement('source'); src.src = s; v.appendChild(src); });
+          wrap.appendChild(v);
+        } else if (item.kind === 'text' || extOf(item.src) === 'txt'){
+          const pre = document.createElement('pre');
+          const raw = item.src; const enc = encodeURI(raw);
+          const candidates = [ raw, enc, './'+raw.replace(/^\/?/, ''), './'+enc.replace(/^\/?/, ''), '/'+raw.replace(/^\/?/, ''), '/'+enc.replace(/^\/?/, '') ];
+          (async ()=>{ let ok=false; for (const p of candidates){ try{ const res = await fetch(p, { cache:'no-cache' }); if (res.ok){ pre.textContent = await res.text(); ok = true; break; } }catch(e){} } if (!ok) pre.textContent = '(failed to load: '+ item.src +')'; })();
+          wrap.appendChild(pre);
+        } else { const a = document.createElement('a'); a.href=item.src; a.textContent='Open'; wrap.appendChild(a); }
+        return wrap;
+      }
+      top.forEach(it => mediaTop.appendChild(renderItem(it)));
+      rest.forEach(it => mediaRest.appendChild(renderItem(it)));
+      // Initialize Game 2 bindings after media functions exist
+      (function initGame2(){
+        const area2 = document.getElementById('area2');
+        if (!area2) return;
+        const scoreEl2 = document.getElementById('score2');
+        const timeLeftEl2 = document.getElementById('timeLeft2');
+        const highScoreEl2b = document.getElementById('highScore2b');
+        const startBtn2 = document.getElementById('startBtn2');
+        const resetBtn2 = document.getElementById('resetBtn2');
+        const statusEl2 = document.getElementById('status2');
+        let running2=false, score2=0, spawnTimer2=null, timerInterval2=null, endAt2=0;
+        const HS2_KEY = 'plushcon_rr_highscore';
+        const getHigh2=()=> parseInt(localStorage.getItem(HS2_KEY)||'0',10) || 0;
+        const setHigh2=(v)=> localStorage.setItem(HS2_KEY, String(v));
+        const updateHigh2=()=>{ if (highScoreEl2b) highScoreEl2b.textContent = getHigh2(); };
+        const rnd2=(min,max)=> Math.random()*(max-min)+min;
+        function spawnConfetti2(x, y){
+          const colors = ['#ff5fa3','#66d1ff','#ffd166','#70d28b','#b388eb'];
+          for (let i=0;i<14;i++){
+            const p = document.createElement('span'); p.className='confetti';
+            p.style.left=x+'px'; p.style.top=y+'px'; p.style.background=colors[Math.floor(Math.random()*colors.length)];
+            p.style.setProperty('--dx', (Math.random()*140-70).toFixed(1)+'px');
+            p.style.setProperty('--dy', (Math.random()*-160-60).toFixed(1)+'px');
+            p.style.setProperty('--rz', (Math.random()*360-180).toFixed(1)+'deg');
+            area2.appendChild(p); setTimeout(()=>p.remove(), 900);
+          }
+        }
+        function gameOver2(){
+          running2=false; clearTimeout(spawnTimer2); clearInterval(timerInterval2);
+          const hs = getHigh2(); if (score2>hs) setHigh2(score2); updateHigh2();
+          statusEl2.textContent = 'Time up! Final: ' + score2;
+        }
+        function spawn2(){
+          if (!running2) return;
+          const div=document.createElement('div'); div.className='plush';
+          div.textContent = plushies[Math.floor(Math.random()*plushies.length)];
+          const size=rnd2(38,68); div.style.fontSize=size+'px';
+          const w=area2.clientWidth-size; const h=area2.clientHeight-size;
+          div.style.left=Math.max(0,rnd2(0,w))+'px'; div.style.top=Math.max(0,rnd2(0,h))+'px';
+          const lifetime=rnd2(600,1200); const appear=Date.now();
+          const remove=()=>{ if(div.parentNode) area2.removeChild(div); };
+          const clicky=()=>{
+            if(!div.isConnected) return;
+            const rect = div.getBoundingClientRect(); const parentRect = area2.getBoundingClientRect();
+            const cx = rect.left - parentRect.left + rect.width/2; const cy = rect.top - parentRect.top + rect.height/2;
+            const dt=Date.now()-appear; const bonus=Math.max(1,Math.floor((1200-dt)/200));
+            score2 += 1+bonus; scoreEl2.textContent=score2; spawnConfetti2(cx, cy); remove();
+          };
+          div.addEventListener('click', clicky, { passive:true });
+          div.addEventListener('touchstart', clicky, { passive:true });
+          area2.appendChild(div); setTimeout(remove, lifetime);
+          const delay=Math.max(160, 760 - score2*6); spawnTimer2=setTimeout(spawn2, delay);
+        }
+        function startGame2(){
+          if (running2) return; running2=true; score2=0; scoreEl2.textContent='0'; statusEl2.textContent='Go!';
+          endAt2 = Date.now() + 45000; clearInterval(timerInterval2);
+          timerInterval2 = setInterval(()=>{ const left=Math.max(0,Math.ceil((endAt2-Date.now())/1000)); timeLeftEl2.textContent=left; if(left<=0){ gameOver2(); } }, 200);
+          spawn2();
+        }
+        updateHigh2();
+        startBtn2.addEventListener('click', startGame2);
+        resetBtn2.addEventListener('click', ()=>{ running2=false; clearTimeout(spawnTimer2); clearInterval(timerInterval2); score2=0; scoreEl2.textContent='0'; timeLeftEl2.textContent='45'; statusEl2.textContent='Ready...'; Array.from(area2.children).forEach(c=>c.remove()); });
+      })();
+    }
+  </script>
 </body>
 </html>
