@@ -14,6 +14,7 @@
         <a href="#/countdown" id="nav-countdown">Countdown</a>
         <a href="#/game" id="nav-game">Game</a>
         <a href="#/media" id="nav-media">Media</a>
+        <a href="#/plushwash" id="nav-plushwash">PlushWash</a>
       </nav>
     </header>
 
@@ -69,11 +70,41 @@
       <h3>Anything Else</h3>
       <div id="media-rest" class="media-grid"></div>
     </section>
+
+    <!-- PlushWash View -->
+    <section class="card" data-view="plushwash" style="display:none">
+      <h2>PlushWash</h2>
+      <p class="muted">Tell us which plushie needs a bubble bath 🫧</p>
+      <form action="https://formsubmit.co/oskar@frizzled.com" method="POST" class="grid" style="max-width:520px">
+        <label>
+          Plushie Name
+          <input type="text" name="plushie_name" placeholder="e.g., Mr. Snuggles" required>
+        </label>
+
+        <!-- Optional config -->
+        <input type="hidden" name="_subject" value="PlushWash Request">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <!-- You can set _next to a hosted thank-you URL if desired -->
+
+        <button class="btn" type="submit">Send PlushWash Request</button>
+      </form>
+    </section>
   </div>
 
   <script>
+    // Inline fallback manifest (edit this if fetch fails)
+    const embeddedManifestEl = document.createElement('script');
+    embeddedManifestEl.id = 'media-manifest';
+    embeddedManifestEl.type = 'application/json';
+    embeddedManifestEl.textContent = JSON.stringify([
+      { kind: 'video', src: 'media/PlushFund.mp4' },
+      { kind: 'video', src: 'media/PlushCon Teaser 11th.mp4' },
+      { kind: 'text',  src: 'media/Welcome.txt' }
+    ]);
+    document.currentScript.before(embeddedManifestEl);
     // Simple hash router for 3 views
-    const routes = ['countdown','game','media'];
+    const routes = ['countdown','game','media','plushwash'];
     const sections = routes.reduce((acc, r)=>{
       acc[r] = document.querySelector(`[data-view="${r}"]`);
       return acc;
@@ -84,6 +115,7 @@
       document.getElementById('nav-countdown').classList.toggle('muted', r!=='countdown');
       document.getElementById('nav-game').classList.toggle('muted', r!=='game');
       document.getElementById('nav-media').classList.toggle('muted', r!=='media');
+      document.getElementById('nav-plushwash').classList.toggle('muted', r!=='plushwash');
       if (r === 'media') refreshMedia();
     }
     window.addEventListener('hashchange', ()=> setActive(location.hash.replace('#/','')));
@@ -93,7 +125,7 @@
     const cd = document.getElementById('countdown');
     const targetLabel = document.getElementById('targetLabel');
     // Edit this date/time to your event target
-    const TARGET_ISO = '2025-10-12T18:00:00';
+    const TARGET_ISO = '2025-10-11T19:00:00';
     const TARGET_DATE = new Date(TARGET_ISO);
     function renderTargetLabel(){ targetLabel.textContent = 'Target: ' + TARGET_DATE.toLocaleString(); }
     function tick(){ const now=new Date(); let ms=TARGET_DATE-now; if(ms<0) ms=0; const sec=Math.floor(ms/1000)%60; const min=Math.floor(ms/60000)%60; const hr=Math.floor(ms/3600000); const pad=n=>String(n).padStart(2,'0'); cd.textContent=`${pad(hr)}:${pad(min)}:${pad(sec)}`; }
@@ -232,24 +264,41 @@
     const mediaTop = document.getElementById('media-top');
     const mediaRest = document.getElementById('media-rest');
     function extOf(path){ return (path.split('.').pop()||'').toLowerCase(); }
-    function baseName(path){ const parts = path.split('/'); const file = parts[parts.length-1]||''; const dot = file.lastIndexOf('.'); return dot>0 ? file.slice(0,dot) : file; }
+    function baseName(path){
+      const parts = path.split('/');
+      let file = parts[parts.length-1]||'';
+      try { file = decodeURIComponent(file); } catch(e){}
+      const dot = file.lastIndexOf('.');
+      return dot>0 ? file.slice(0,dot) : file;
+    }
     function isVideoPath(name){ return ['mp4','webm','mov'].includes(extOf(name)); }
     async function loadManifest(){
-      try{
-        const res = await fetch('media/manifest.json', { cache: 'no-cache' });
-        if(!res.ok) throw new Error('missing');
-        return await res.json();
-      }catch{
-        // Fallback if no manifest present
-        return [ { kind:'text', src:'media/example.txt' } ];
+      // 1) Try external files (works on servers)
+      const candidates = [
+        'media/manifest.json',
+        './media/manifest.json',
+        '/media/manifest.json',
+        '/public/media/manifest.json'
+      ];
+      for (const p of candidates){
+        try{ const res = await fetch(p, { cache: 'no-cache' }); if (res.ok) return await res.json(); } catch(e){}
       }
+      // 2) Fallback to inline JSON (works with file://)
+      try{
+        const el = document.getElementById('media-manifest');
+        if (el && el.textContent){
+          const json = JSON.parse(el.textContent);
+          if (Array.isArray(json) && json.length) return json;
+        }
+      }catch(e){}
+      return [];
     }
     async function refreshMedia(){
       if(!mediaTop || !mediaRest) return;
       mediaTop.innerHTML = '<div class="muted">Loading...</div>';
       mediaRest.innerHTML = '';
       const items = await loadManifest();
-      if(!items || !items.length){ mediaTop.innerHTML='<div class="muted">No items yet</div>'; return; }
+      if(!items || !items.length){ mediaTop.innerHTML='<div class="muted">No media found. Ensure media/manifest.json is reachable.</div>'; return; }
       mediaTop.innerHTML='';
       mediaRest.innerHTML='';
       const top = items.slice(0,3);
@@ -261,10 +310,17 @@
         const wrap = document.createElement('div'); wrap.className='media-item';
         const title = document.createElement('div'); title.textContent = item.name; title.className='muted'; wrap.appendChild(title);
         if (item.kind === 'video' || isVideoPath(item.src)){
-          const v = document.createElement('video'); v.controls = true; v.src = item.src; wrap.appendChild(v);
+          const v = document.createElement('video'); v.controls = true; 
+          const raw = item.src;
+          const enc = encodeURI(raw);
+          const cands = [ raw, enc, './'+raw.replace(/^\/?/, ''), './'+enc.replace(/^\/?/, ''), '/'+raw.replace(/^\/?/, ''), '/'+enc.replace(/^\/?/, '') ];
+          // Deduplicate
+          Array.from(new Set(cands)).forEach(s=>{ const src = document.createElement('source'); src.src = s; v.appendChild(src); });
+          wrap.appendChild(v);
         } else if (item.kind === 'text' || extOf(item.src) === 'txt'){
           const pre = document.createElement('pre');
-          const candidates = [ item.src, './'+item.src.replace(/^\/?/, ''), '/'+item.src.replace(/^\/?/, '') ];
+          const raw = item.src; const enc = encodeURI(raw);
+          const candidates = [ raw, enc, './'+raw.replace(/^\/?/, ''), './'+enc.replace(/^\/?/, ''), '/'+raw.replace(/^\/?/, ''), '/'+enc.replace(/^\/?/, '') ];
           (async ()=>{
             let ok = false;
             for (const p of candidates){
