@@ -1,5 +1,5 @@
 [
-  { "kind": "text", "src": "media/spookfest.text" },
+  { "kind": "text", "src": "media/spookfest.txt" },
   { "kind": "video", "src": "media/SecretCon.mp4" },
   { "kind": "video", "src": "media/PlushFund.mp4" },
   { "kind": "text", "src": "media/Welcome.txt" },
